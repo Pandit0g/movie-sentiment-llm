@@ -1,36 +1,33 @@
-import google.generativeai as genai
+# sentiment_llm.py
 import os
 
-# Configure Gemini API (expects your API key in environment variable)
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+try:
+    import streamlit as st
+except Exception:
+    st = None
 
+def _get_api_key():
+    # 1) Prefer Streamlit Secrets if available
+    if st and "GEMINI_API_KEY" in st.secrets:
+        return st.secrets["GEMINI_API_KEY"]
 
-def analyze_review(review_text: str):
-    """
-    Analyze a movie review using Gemini.
-    Returns JSON with label, confidence, explanation, and evidence phrases.
-    """
+    # 2) Fallback to environment variables
+    key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    if not key:
+        raise RuntimeError(
+            "Missing API key. Set GEMINI_API_KEY (or GOOGLE_API_KEY) "
+            "in Streamlit Secrets or as an environment variable."
+        )
+    return key
 
-    prompt = f"""
-    You are a movie review sentiment analyzer.
-    Review: {review_text}
-    Task: Classify as Positive, Negative, or Neutral.
-    Return JSON with fields:
-    - label (Positive/Negative/Neutral)
-    - confidence (0 to 1)
-    - explanation (short reason grounded in text)
-    - evidence_phrases (key phrases that justify sentiment)
-    """
+import google.generativeai as genai
+genai.configure(api_key=_get_api_key())
 
+# your existing function(s)
+def analyze_review(text: str) -> str:
     model = genai.GenerativeModel("gemini-1.5-flash")
-    response = model.generate_content(prompt)
+    resp = model.generate_content(
+        f"Classify the sentiment of this movie review as 'positive' or 'negative':\n\n{text}"
+    )
+    return resp.text.strip()
 
-    try:
-        return eval(response.text)  # assumes Gemini returns JSON-like
-    except:
-        return {
-            "label": "Error",
-            "confidence": 0.0,
-            "explanation": "Parsing issue",
-            "evidence_phrases": []
-        }
