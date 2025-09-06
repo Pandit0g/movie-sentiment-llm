@@ -1,10 +1,5 @@
 import streamlit as st
-import os
-import google.generativeai as genai
-from sentiment_llm import analyze_review   # <-- using our engine from sentiment_llm.py
-
-# Configure Gemini API
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+from sentiment_llm import analyze_review   # <- handles API key & Gemini config
 
 # Streamlit UI
 st.set_page_config(page_title="Movie Sentiment Analyzer", page_icon="🎬")
@@ -18,8 +13,8 @@ review_text = st.text_area("Enter your review:", height=150)
 if st.button("Analyze"):
     if review_text.strip():
         with st.spinner("Analyzing..."):
-            result = analyze_review(review_text)   # call our function
+            result = analyze_review(review_text)  # string result
         st.subheader("Result")
-        st.json(result)   # Pretty JSON display
+        st.write(result)  # ✅ Use write instead of json
     else:
         st.warning("⚠️ Please enter some review text first.")
