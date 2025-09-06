@@ -1,26 +1,38 @@
+# sentiment_llm.py
 import os
-import streamlit as st
 import google.generativeai as genai
 
+try:
+    import streamlit as st
+except Exception:
+    st = None
+
+
 def _get_api_key():
-    # Prefer Streamlit Secrets
-    if hasattr(st, "secrets") and "GEMINI_API_KEY" in st.secrets:
-        return st.secrets["GEMINI_API_KEY"]
+    # Prefer Streamlit Secrets when available
+    if st is not None:
+        try:
+            return st.secrets["GEMINI_API_KEY"]
+        except Exception:
+            pass
+    # Fallback to environment variables
+    return os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 
-    # Fallback to env vars
-    key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-    if not key:
-        # Helpful error – caught by streamlit_app.py if you use the guard above
+
+def _get_model():
+    api_key = _get_api_key()
+    if not api_key:
+        # raise here, but only when we actually need the model
         raise RuntimeError(
-            "Missing API key. Set GEMINI_API_KEY (or GOOGLE_API_KEY) in Streamlit Secrets "
-            "or as an environment variable."
+            "Missing API key. Set GEMINI_API_KEY (or GOOGLE_API_KEY) "
+            "in Streamlit Secrets or as an environment variable."
         )
-    return key
+    genai.configure(api_key=api_key)
+    return genai.GenerativeModel("gemini-1.5-flash")
 
-genai.configure(api_key=_get_api_key())
 
 def analyze_review(text: str) -> str:
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = _get_model()
     resp = model.generate_content(
         "Classify the sentiment of this movie review as 'positive' or 'negative':\n\n" + text
     )
