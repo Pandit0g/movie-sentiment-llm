@@ -1,6 +1,8 @@
 # streamlit_app.py
-import os
-import streamlit as st
+import os, streamlit as st
+st.write("DEBUG secrets keys:", list(st.secrets.keys()))
+st.write("DEBUG has env GEMINI_API_KEY:", bool(os.getenv("GEMINI_API_KEY")))
+
 
 # quick pre-check so we can render a helpful UI instead of crashing
 has_key = (
