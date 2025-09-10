@@ -2,20 +2,7 @@ import os, re
 import streamlit as st
 
 # Show a friendly message if the key isn't set (prevents import-time crash)
-has_key = (
-    ("GEMINI_API_KEY" in st.secrets)
-    or bool(os.getenv("GEMINI_API_KEY"))
-    or bool(os.getenv("GOOGLE_API_KEY"))
-)
-
-if not has_key:
-    st.error(
-        "API key not configured.\n\n"
-        "In Streamlit Cloud: Manage app → Settings → Secrets → add\n"
-        'GEMINI_API_KEY = "YOUR_REAL_KEY"\n\nThen click Rerun.'
-    )
-    st.stop()
-
+has_key =st.secrets.get("GEMINI_API_KEY")
 from sentiment_llm import analyze_review  # safe to import after guard
 
 st.set_page_config(page_title="Movie Sentiment Analyzer", page_icon="🎬")
