@@ -2,7 +2,7 @@ import os, re
 import streamlit as st
 
 # Show a friendly message if the key isn't set (prevents import-time crash)
-has_key =st.secrets.get("GEMINI_API_KEY")
+key =st.secrets.get("GEMINI_API_KEY")
 from sentiment_llm import analyze_review  # safe to import after guard
 
 st.set_page_config(page_title="Movie Sentiment Analyzer", page_icon="🎬")
